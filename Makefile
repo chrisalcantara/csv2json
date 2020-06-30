@@ -1,15 +1,18 @@
 CC=clang
 CFLAGS+=-Wall -Wextra -Werror
-# CFLAGS += -Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
-LDFLAGS=
+CFLAGS += -Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
+
 SOURCES=$(shell find src/ -type f -name '*.c')
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=csv2json
 
 all: $(SOURCES) $(EXECUTABLE)
 
-test:
-	./csv2json hello
+build: all
+	mv ./csv2json ~/.scripts/
+
+test: all
+	./csv2json <./data/data.csv
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
