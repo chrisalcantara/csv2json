@@ -1,7 +1,5 @@
-A small program to convert a CSV to JSON file in C, mainly to practice working
-
+A small program to convert a CSV to JSON file in C, mainly to practice working 
 with memory management, pointer arrays and file I/O.
-
 
 Install
 ========
@@ -9,6 +7,8 @@ Install
 1. Clone repo.
 2. Run `make`
 3. csv2json binary should appear[1]
+
+This should work if you're using a Unix-based system.
 
 
 Small benchmarks
