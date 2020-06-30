@@ -96,10 +96,7 @@ get_data_size(struct size *s, FILE *file)
 		}
 		rows++;
 	}
-
 	rewind(file);
-
-	printf("%d %d\n", rows, cols);
 
 	s->rows = rows;
 	s->cols = cols;
@@ -152,11 +149,13 @@ make_rows(struct size *s, struct row **r, FILE *file)
 	}
 }
 
+#define nelem(x) (sizeof(x) / sizeof((x)[0]))
+
 void
 convert_to_json(char **final, struct size *s, struct row **r)
 {
 
-	int total;
+	size_t total = 0;
 	char **objects;
 
 	// object array
@@ -211,15 +210,18 @@ convert_to_json(char **final, struct size *s, struct row **r)
 
 		obj[strlen(obj)] = '\0';
 		objects[i + 1] = obj;
+
+		// get the total bytes
+		// needed to reallocate
+		// finel string pointer
+		total += strlen(obj);
 	}
 	objects[s->rows + 1] = "]";
 
-	total = 0;
+	// add one for the closing bracket
+	*final = realloc(*final, total + 1);
+
 	while (*objects != NULL) {
-		int size;
-		size = strlen(*objects);
-		total += size;
-		*final = realloc(*final, total);
 		strcat(*final, *objects);
 		objects++;
 	}
@@ -249,7 +251,7 @@ main(int argc, char **argv)
 	struct row **rows;
 
 	char *json;
-	json = malloc(1 * sizeof(char *));
+	json = malloc(10 * sizeof(char *));
 
 	file = fopen(argv[1], "r");
 	/* file = fopen("../data.csv", "r"); */
@@ -264,10 +266,10 @@ main(int argc, char **argv)
 
 	convert_to_json(&json, &s, rows);
 
-	if (argc == 3)
-		fprintf(stdout, "%s\n", json);
+	fprintf(stdout, "%s\n", json);
+	/* if (argc == 3) */
 
-	// garbage collection
+	/* garbage collection */
 	free(json);
 	free_structs(rows, s.rows);
 
