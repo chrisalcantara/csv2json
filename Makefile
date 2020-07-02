@@ -1,3 +1,11 @@
+.SILENT:test
+
+CC=cc
+
+WARNINGS=-Wall -Wextra -Werror -Wstrict-prototypes
+
+CFLAGS +=-O2 $(WARNINGS)
+
 all: csv2json
 
 SOURCES=$(shell find src -type f -name '*.c')
@@ -10,15 +18,17 @@ build: all
 	mv ./csv2json ~/.scripts/
 
 test: all
-	# ./csv2json <./test-data/small.csv
-	./csv2json ./test-data/20200512_612107715.csv
+	./csv2json <./test-data/small.csv | jsonlint > /dev/null && echo "OK"
+	./csv2json ./test-data/small.csv | jsonlint > /dev/null && echo "OK"
+	./csv2json ./test-data/20200512_612107715.csv | jsonlint > /dev/null && echo "OK"
+	./csv2json <./test-data/20200512_612107715.csv | jsonlint > /dev/null && echo "OK"
 
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(OBJECTS) -o $@
 
 .o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
 	@rm -f $(EXECUTABLE) *.json

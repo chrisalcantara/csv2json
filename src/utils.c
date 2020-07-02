@@ -118,6 +118,7 @@ trim_whitespace(char *str)
 void
 trim(char *token)
 {
+
 	bool in_quotes;
 	char *dup;
 	size_t character_count, token_length, length_diff;

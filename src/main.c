@@ -57,7 +57,8 @@ main(int argc, char **argv)
 	print_json(json);
 
 	/* Clean up loose memory */
-	/* free(json); */
+	free(json);
+	free(rows);
 	/* free_structs(rows, s.rows); */
 
 	exit(EXIT_SUCCESS);

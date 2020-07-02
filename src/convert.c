@@ -13,10 +13,22 @@ static void
 add_quotes(char *str)
 {
 	char buf[QUOTE_SIZE];
+	char *has_comma;
+	char *has_new_line;
+
 	if (str[0] != '"') {
+		if ((has_comma = strstr(str, ",")) != NULL)
+			has_comma[0] = '\0';
+		if ((has_new_line = strstr(str, "\n")) != NULL) {
+			has_new_line[0] = '\0';
+		}
 		snprintf(buf, strlen(str) + 3, "\"%s\"", str);
-		buf[strlen(buf)] = '\0';
 		strcpy(str, buf);
+	}
+
+	/* Remove extra space at the end */
+	if ((has_new_line = strstr(str, "\n")) != NULL) {
+		has_new_line[0] = '\0';
 	}
 }
 
@@ -56,10 +68,14 @@ convert_to_json(char **final, struct size *s, struct row **r)
 			key = r[i]->headers[j];
 			value = r[i]->values[j];
 
+			// last chance to remove
+			// lingering white space
+			// before wrapping in quotes
+			trim_whitespace(key);
+			trim_whitespace(value);
+
 			add_quotes(key);
 			add_quotes(value);
-
-			trim_whitespace(value);
 
 			key_pair_size = strlen(key) + 1 + strlen(value) + 1;
 

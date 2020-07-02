@@ -56,6 +56,7 @@ check_comma_in_quotes(char *line)
 static void
 split_line(char *string, char **collection)
 {
+
 	char curr, prev, next;
 	char *temp;
 
