@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,14 +25,11 @@ main(int argc, char **argv)
 	if (!pipe_used && argc < 2)
 		print_use();
 
-	if (pipe_used) {
-		file = stdin;
-	} else {
-		file = fopen(argv[1], "r");
-		if (file == NULL) {
-			perror("Error: Can't open file\n");
-			exit(EXIT_FAILURE);
-		}
+	file = (pipe_used) ? stdin : fopen(argv[1], "r");
+
+	if (file == NULL) {
+		perror("Error: Can't open file\n");
+		exit(EXIT_FAILURE);
 	}
 
 	/* Allocate space for the final json. This will be resized
