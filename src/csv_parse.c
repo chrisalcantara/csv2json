@@ -1,8 +1,35 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "csv2json.h"
+
+#include "utils.h"
+
+static void
+trim(char *token)
+{
+	char *dup;
+	size_t character_count, token_length, length_diff;
+
+	// To reset pointer
+	dup = token;
+	character_count = 0;
+
+	while (*token != '\0') {
+		if (isspace(*token) || *token == ',')
+			break;
+		token++, character_count++;
+	}
+	token = dup;
+
+	token_length = strlen(token);
+	length_diff = token_length - character_count;
+
+	if (token_length > character_count)
+		token[token_length - length_diff] = '\0';
+}
 
 static void
 check_if_in_quotes(char curr, char prev, int *in_quotes)
@@ -56,9 +83,8 @@ split_line(char *string, char **collection)
 			size_t s;
 			char *output;
 
-			/* Clean up temp string */
+			trim(temp);
 			s = strlen(temp);
-			temp[s - 1] = '\0';
 
 			output = malloc(s + 1 * sizeof(char *));
 			strcpy(output, temp);
@@ -66,8 +92,7 @@ split_line(char *string, char **collection)
 			collection[count] = output;
 
 			temp[0] = '\0';
-			string++;
-			count++;
+			string++, count++;
 			continue;
 		}
 		string++;
@@ -78,104 +103,94 @@ split_line(char *string, char **collection)
 /* Map structs for row headers and values to an array to
    be converted to JSON. */
 void
-make_rows(struct size *s, struct row **r, char *file)
+make_rows(struct size *s, struct row **r, FILE *file)
 {
+	char *line, **headers;
+	size_t len;
+	ssize_t read;
+	int rows;
 
-	int i = 0;
-	int rows = 0;
-
-	char buf[BUFSIZ];
-	char **headers, **values;
+	line = NULL;
+	len = 0;
+	rows = -1;
 
 	headers = malloc(s->cols * sizeof(char *));
 
 	/* Same split method as in split_lines, but also handles
 	   headers and values, as well as maps to struct  */
-	while (*file) {
-		buf[i++] = *file;
-		if (*file == '\n') {
-			buf[i - 1] = '\0';
+	while ((read = getline(&line, &len, file)) != EOF) {
+		char **values = malloc(s->cols * sizeof(char *));
+		if (rows == -1) {
+			int i = 0;
+			size_t token_length;
+			char *token, *text, *output;
 
-			/* Handle getting sole header array */
-			if (rows == 0) {
-				split_line(buf, headers);
-				rows++;
-				buf[0] = '\0';
-				i = 0;
-				file++;
-				continue;
+			text = strdup(line);
+
+			while ((token = strsep(&text, ",")) != NULL) {
+				trim(token);
+				token_length = strlen(token);
+				output = malloc(token_length * sizeof(char *));
+				strncpy(output, token, token_length);
+				headers[i++] = output;
 			}
 
-			/* Otherwise, create value array block
-			   and copy into it. */
-			values = malloc(s->cols * sizeof(char *));
-			split_line(buf, values);
+			if (s->cols != i) {
 
-			/* Data goes up by one, but rows nees the index. */
-			r[rows - 1]->headers = headers;
-			r[rows - 1]->values = values;
-			r[rows - 1]->cols = s->cols;
+				fprintf(stderr, "%s",
+				    "Error: No. of columns don't match with "
+				    "the number of headers calculated. This "
+				    "program splits by comma. Is there a stray "
+				    "comma in the file's header row?\n");
+
+				exit(0);
+			}
 
 			rows++;
-			i = 0;
+			continue;
 		}
-		file++;
+		split_line(line, values);
+
+		r[rows]->headers = headers;
+		r[rows]->values = values;
+		r[rows]->cols = s->cols;
+
+		rows++;
 	}
 }
 
 /* Helps determine how large the data is, row- and column-wise */
 void
-get_data_size(struct size *s, char *file)
+get_data_size(struct size *s, FILE *file)
 {
-	int i, rows, cols;
 
-	char buf[BUFSIZ];
+	char buff[1000];
+	int rows, cols;
+
 	char **columns;
 
-	/* Start by allocating 500 columns -- pointers to
-	   get the number of columns. If the data is larger,
-	   then up the MAX_COLUMNS. We free this pointer array
-	   later.*/
+	// start with items;
 	columns = malloc(MAX_COLUMNS * sizeof(char *));
 
-	/* Here's where we'll get the row count
-	   For row, we start at -1 to account for
-	   the header row.*/
-	i = 0;
+	// get number of rows in file
+	// start at -1 so it excludes headers
 	rows = -1;
 	cols = 0;
-
-	/* Use pointer arithmetic to split each row  */
-	while (*file) {
-
-		/* Buf is a placeholder */
-		buf[i++] = *file;
-
-		/* Do the split when we hit a new line  */
-		if (*file == '\n') {
-
-			buf[i] = '\0';
-
-			if (rows == -1) {
-				split_line(buf, columns);
-
-				/* quickly get number of columns */
-				while (*columns != NULL) {
-					cols++;
-					columns++;
-				}
-			}
+	while (fgets(buff, 1000, file) != '\0') {
+		if (rows == -1) {
+			split_line(buff, columns);
 			rows++;
-			i = 0;
+			// quickly get number of colums
+			while (*(columns++) != NULL)
+				cols++;
+			continue;
 		}
-		file++;
+		rows++;
 	}
+	rewind(file);
 
 	s->rows = rows;
 	s->cols = cols;
 
-	/* Clean columns array */
-	for (int i = 0; i < cols; ++i) {
-		free(columns[i]);
-	}
+	free_columns(cols, columns);
 }

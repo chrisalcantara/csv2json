@@ -18,37 +18,22 @@ main(int argc, char **argv)
 	struct size s;
 	struct row **rows;
 
-	bool pipe_used;
-	char input_char;
-	size_t input_size;
-
+	int pipe_used;
 	char *json;
-	char *input;
 
-	input_size = 0;
-	input = malloc(1 * sizeof(char *));
-
-	/* Determine if data is coming from
-	   stdin or file. */
 	pipe_used = !isatty(STDIN_FILENO);
 
 	if (!pipe_used && argc < 2)
 		print_use();
 
 	if (pipe_used) {
-		while ((input_char = getchar()) != EOF)
-			read_input(&input, &input_size, &input_char);
-
+		file = stdin;
 	} else {
 		file = fopen(argv[1], "r");
 		if (file == NULL) {
-			perror("Error: Can't open file or it doesn't "
-			       "exist");
+			perror("Error: Can't open file\n");
 			exit(EXIT_FAILURE);
 		}
-
-		while ((input_char = fgetc(file)) != EOF)
-			read_input(&input, &input_size, &input_char);
 	}
 
 	/* Allocate space for the final json. This will be resized
@@ -57,7 +42,7 @@ main(int argc, char **argv)
 
 	/* Get number of colums and rows from input that will to create
 	   arrays of headers and value structs. */
-	get_data_size(&s, input);
+	get_data_size(&s, file);
 
 	/* Rows is a pointer to an array of struct pointers, so we'll
 	   allocate space for the array and fill it with pointers to
@@ -67,7 +52,7 @@ main(int argc, char **argv)
 
 	/* Here is where the values of input is mapped to structs and
 	   added to the overall array of row structs.*/
-	make_rows(&s, rows, input);
+	make_rows(&s, rows, file);
 
 	/* Taking the row array, we convert struct into JSON string. */
 	convert_to_json(&json, &s, rows);
@@ -77,7 +62,6 @@ main(int argc, char **argv)
 	print_json(json);
 
 	/* Clean up loose memory */
-	free(input);
 	free(json);
 	free_structs(rows, s.rows);
 

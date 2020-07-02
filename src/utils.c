@@ -47,7 +47,7 @@ free_structs(struct row **rows, int n_rows)
 void
 print_json(char *json)
 {
-	fprintf(stdout, "%s", json);
+	fprintf(stdout, "%s\n", json);
 }
 
 /* Create a pointer array to struct row pointers. */
