@@ -10,8 +10,8 @@ build: all
 	mv ./csv2json ~/.scripts/
 
 test: all
-	./csv2json <./test-data/data.csv
-	# ./csv2json ./test-data/20200512_612107715.csv
+	# ./csv2json <./test-data/small.csv
+	./csv2json ./test-data/20200512_612107715.csv
 
 
 $(EXECUTABLE): $(OBJECTS)

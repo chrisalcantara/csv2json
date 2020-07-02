@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,21 +21,19 @@ main(int argc, char **argv)
 	int pipe_used;
 	char *json;
 
-	pipe_used = !isatty(STDIN_FILENO);
+	/* Allocate space for the final json. This will be resized
+	   multiple times during the conversation */
+	json = malloc(10 * sizeof(char *));
 
+	pipe_used = !isatty(STDIN_FILENO);
 	if (!pipe_used && argc < 2)
 		print_use();
 
 	file = (pipe_used) ? stdin : fopen(argv[1], "r");
-
 	if (file == NULL) {
 		perror("Error: Can't open file\n");
 		exit(EXIT_FAILURE);
 	}
-
-	/* Allocate space for the final json. This will be resized
-	   multiple times during the conversation */
-	json = malloc(10 * sizeof(char *));
 
 	/* Get number of colums and rows from input that will to create
 	   arrays of headers and value structs. */
@@ -58,8 +57,8 @@ main(int argc, char **argv)
 	print_json(json);
 
 	/* Clean up loose memory */
-	free(json);
-	free_structs(rows, s.rows);
+	/* free(json); */
+	/* free_structs(rows, s.rows); */
 
 	exit(EXIT_SUCCESS);
 

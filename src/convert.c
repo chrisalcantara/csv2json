@@ -1,8 +1,12 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "main.h"
+
+#include "csv_parse.h"
+#include "utils.h"
 
 /* Utility to surround string with quotes.*/
 static void
@@ -26,7 +30,7 @@ convert_to_json(char **final, struct size *s, struct row **r)
 
 	// object array
 	// add two to include {open,close} brackets
-	objects = malloc((s->rows + 2) * sizeof(char *));
+	objects = malloc(s->rows + 2 * sizeof(char *));
 
 	objects[0] = "[";
 	for (int i = 0; i < s->rows; ++i) {
@@ -54,6 +58,8 @@ convert_to_json(char **final, struct size *s, struct row **r)
 
 			add_quotes(key);
 			add_quotes(value);
+
+			trim_whitespace(value);
 
 			key_pair_size = strlen(key) + 1 + strlen(value) + 1;
 
@@ -101,8 +107,7 @@ convert_to_json(char **final, struct size *s, struct row **r)
 	// Add one for the closing bracket
 	*final = realloc(*final, (total + 1) * sizeof(char *));
 
-	while (*objects != NULL) {
-		strcat(*final, *objects);
-		objects++;
+	for (int i = 0; i < s->rows + 2; ++i) {
+		strcat(*final, objects[i]); /*  */
 	}
 }

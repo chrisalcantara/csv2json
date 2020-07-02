@@ -1,3 +1,5 @@
+#include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,4 +65,86 @@ populate_rows(struct size *s)
 		rows[i] = r;
 	}
 	return rows;
+}
+
+void
+check_if_in_quotes(char curr, char prev, bool *in_quotes)
+{
+	/* Check if we are seeing a character
+	   that is between quotes.*/
+	if (curr == '"' && *in_quotes == false) {
+		*in_quotes = true;
+	} else if (prev == '"' && curr == ',' && *in_quotes == true)
+		*in_quotes = false;
+}
+
+int
+str_len(char *word)
+{
+	int i = 0;
+	while (*(word++) != '\0')
+		i++;
+	return i;
+}
+
+void
+trim_whitespace(char *str)
+{
+	char *end;
+	int index, i;
+	index = 0;
+
+	/* trim leading space. */
+	while (str[index] == ' ' || str[index] == '\t' || str[index] == '\n')
+		index++;
+	if (index != 0) {
+		i = 0;
+		while (str[i + index] != '\0') {
+			str[i] = str[i + index];
+			i++;
+		}
+		str[i] = '\0';
+	}
+
+	/* trim trailing space */
+	end = str + str_len(str) - 1;
+	while (end > str && isspace((unsigned char)*end))
+		end--;
+
+	end[1] = '\0';
+	memcpy(str, str, str_len(str));
+}
+
+void
+trim(char *token)
+{
+	bool in_quotes;
+	char *dup;
+	size_t character_count, token_length, length_diff;
+
+	// To reset pointer
+	dup = token;
+	character_count = 0;
+
+	while (*token != '\0') {
+		char curr = *token;
+		char prev = *(token - 1);
+
+		check_if_in_quotes(curr, prev, &in_quotes);
+
+		if (in_quotes) {
+			token++, character_count++;
+		} else {
+			if ((isspace(*token) || *token == ','))
+				break;
+			token++, character_count++;
+		}
+	}
+	token = dup;
+
+	token_length = strlen(token);
+	length_diff = token_length - character_count;
+
+	if (token_length > character_count)
+		token[token_length - length_diff] = '\0';
 }
