@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "csv2json.h"
+#include "main.h"
 
 void
 print_use(void)

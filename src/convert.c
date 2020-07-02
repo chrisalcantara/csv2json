@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "csv2json.h"
+#include "main.h"
 
 /* Utility to surround string with quotes.*/
 static void

@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "csv2json.h"
+#include "main.h"
 
 #include "convert.h"
 #include "csv_parse.h"
