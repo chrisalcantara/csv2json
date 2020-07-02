@@ -31,16 +31,16 @@ Small benchmarks
 
 Using Go-based program to convert 1,000-row data file.
 
-`time ./csv2json ./data.csv`
+`time ./csv2json ./test-data/data.csv`
 ---------------------------
-real	0m0.011s
-user	0m0.006s
-sys	0m0.003s
+real	0m0.039s
+user	0m0.011s
+sys	0m0.009s
 
 Using the Node-based csvtojson:
 
-`time csvtojson ./data.csv`
+`time csvtojson ./test-data/data.csv`
 ---------------------------
-real	0m0.146s
-user	0m0.105s
-sys	0m0.040s
+real	0m0.223s
+user	0m0.166s
+sys	0m0.055s
