@@ -29,7 +29,7 @@ csv2json <./in.csv > out.json
 Small benchmarks
 ================
 
-Using Go-based program to convert 1,000-row data file.
+Using C-based program to convert 1,000-row data file.
 
 `time ./csv2json ./test-data/data.csv`
 ---------------------------
