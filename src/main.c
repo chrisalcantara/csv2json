@@ -9,18 +9,22 @@
 
 #include "convert.h"
 #include "csv_parse.h"
+#include "print.h"
 #include "utils.h"
 
 int
 main(int argc, char **argv)
 {
-	FILE *file;
 
 	int pipe_used;
-	char **json = NULL;
+	char **json;
 
 	struct size s;
 	struct row **rows;
+
+	FILE *file;
+
+	json = NULL, rows = NULL;
 
 	pipe_used = !isatty(STDIN_FILENO);
 	if (!pipe_used && argc < 2)
@@ -40,20 +44,22 @@ main(int argc, char **argv)
 	/*    allocate space for the array and fill it with pointers to */
 	/*    empty row structs. */
 	/*  *\/ */
-	rows = populate_rows(&s);
+	populate_rows(&s, &rows);
 
 	/* /\* Here is where the values of input is mapped to structs and */
 	/*    added to the overall array of row structs.*\/ */
 	make_rows(&s, rows, file);
 
-	/* /\* Taking the row array, we convert struct into JSON string. *\/ */
+	/* /\* /\\* Taking the row array, we convert struct into JSON string.
+	 * *\\/ *\/ */
 	convert_to_json(&json, &s, rows);
 
-	/* /\* We print the JSON to stdout, which can be directed to a file */
-	/*    or the terminal *\/ */
+	/* /\* /\\* We print the JSON to stdout, which can be directed to a file
+	 * *\/ */
+	/* /\*    or the terminal *\\/ *\/ */
 	print_json(json);
 
-	/* /\* Clean up loose memory *\/ */
+	/* /\* /\\* Clean up loose memory *\\/ *\/ */
 	free(rows);
 	free(json);
 

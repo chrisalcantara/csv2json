@@ -6,27 +6,28 @@
 
 #include "main.h"
 
-#include "errors.h"
+#include "print.h"
 #include "utils.h"
 
 /* Create a pointer array to struct row pointers. */
-struct row **
-populate_rows(struct size *s)
+void
+populate_rows(struct size *s, struct row ***rows)
 {
+
 	int i;
-	struct row **rows;
 	struct row *r;
+	struct row **rs;
 
 	/* Create block that can will hold s->rows of struct row pointers */
-	rows = malloc(s->rows * sizeof(struct row *));
+	rs = malloc(s->rows * sizeof(struct row *));
 
 	/* Loop through and populate. */
 	for (i = 0; i < s->rows; ++i) {
 		r = malloc(sizeof(struct row));
-		rows[i] = r;
+		rs[i] = r;
 	}
 
-	return rows;
+	*rows = rs;
 }
 
 static void
