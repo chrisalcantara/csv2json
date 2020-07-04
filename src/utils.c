@@ -40,31 +40,18 @@ void
 free_structs(struct row **rows, int n_rows)
 {
 	for (int i = 0; i < n_rows; ++i) {
-		/* Freeing the struct is enough */
 		free(rows[n_rows]);
 	}
 }
 
 /* Send final data to output. */
 void
-print_json(char *json)
+print_json(char **json)
 {
-	fprintf(stdout, "%s\n", json);
-}
-
-/* Create a pointer array to struct row pointers. */
-struct row **
-populate_rows(struct size *s)
-{
-	/* Create block that can will hold s->rows of struct row pointers */
-	struct row **rows = malloc(s->rows * sizeof(struct row *));
-
-	/* Loop through and populate. */
-	for (int i = 0; i < s->rows; ++i) {
-		struct row *r = malloc(sizeof(struct row));
-		rows[i] = r;
+	while (*json != NULL) {
+		fprintf(stdout, "%s", *json);
+		json++;
 	}
-	return rows;
 }
 
 void
@@ -90,36 +77,40 @@ str_len(char *word)
 void
 trim_whitespace(char *str)
 {
+
+	char *copy = str;
+
 	char *end;
 	int index, i;
 	index = 0;
 
 	/* trim leading space. */
-	while (str[index] == ' ' || str[index] == '\t' || str[index] == '\n')
+	while (copy[index] == ' ' || copy[index] == '\t' || copy[index] == '\n')
 		index++;
 	if (index != 0) {
 		i = 0;
-		while (str[i + index] != '\0') {
-			str[i] = str[i + index];
+		while (copy[i + index] != '\0') {
+			copy[i] = copy[i + index];
 			i++;
 		}
-		str[i] = '\0';
+		copy[i] = '\0';
 	}
 
 	/* trim trailing space */
-	end = str + str_len(str) - 1;
-	while (end > str && isspace((unsigned char)*end))
+	end = copy + str_len(copy) - 1;
+	while (end > copy && isspace((unsigned char)*end))
 		end--;
 
 	end[1] = '\0';
-	memcpy(str, str, str_len(str));
+
+	memcpy(copy, str, str_len(str));
 }
 
 void
 trim(char *token)
 {
 
-	bool in_quotes;
+	bool in_quotes = false;
 	char *dup;
 	size_t character_count, token_length, length_diff;
 

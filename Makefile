@@ -1,5 +1,3 @@
-.SILENT:test
-
 CC=cc
 
 WARNINGS=-Wall -Wextra -Werror -Wstrict-prototypes
@@ -13,9 +11,6 @@ OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=csv2json
 
 all: $(SOURCES) $(EXECUTABLE)
-
-build: all
-	mv ./csv2json ~/.scripts/
 
 test: all
 	./csv2json <./test-data/small.csv | jsonlint > /dev/null && echo "OK"

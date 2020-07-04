@@ -34,33 +34,45 @@ add_quotes(char *str)
 
 /* Takes the array of row structs and dumps it into a character array */
 void
-convert_to_json(char **final, struct size *s, struct row **r)
+convert_to_json(char ***objects_ptr, struct size *s, struct row **r)
 {
 
+	char *open, *close;
 	char **objects;
-	size_t total = 0;
+	size_t objects_size;
 
 	// object array
 	// add two to include {open,close} brackets
-	objects = malloc(s->rows + 2 * sizeof(char *));
 
-	objects[0] = "[";
+	objects_size = (s->rows + 2) * sizeof(char *);
+
+	objects = *objects_ptr;
+	objects = malloc(objects_size);
+
+	open = "[";
+	close = "]";
+
+	objects[0] = open;
+
 	for (int i = 0; i < s->rows; ++i) {
+
 		char *obj, *with_comma, *no_comma;
 
 		with_comma = "},";
 		no_comma = "}";
 
 		/* // 1000 for each row.x */
-		obj = malloc(OBJ_EACH_ROW_SIZE);
+		obj = malloc(OBJ_EACH_ROW_SIZE * sizeof(char *));
 
 		strcat(obj, "{");
 		for (int j = 0; j < s->cols; ++j) {
 
-			char *key, *value, *temp;
-			size_t key_pair_size;
+			char *key, *value;
 
-			char *format_with_comma, *format_no_comma;
+			char *format_with_comma, *format_no_comma,
+			    *format_to_use;
+
+			char temp[1000];
 
 			format_with_comma = "%s: %s,";
 			format_no_comma = "%s: %s";
@@ -77,33 +89,13 @@ convert_to_json(char **final, struct size *s, struct row **r)
 			add_quotes(key);
 			add_quotes(value);
 
-			key_pair_size = strlen(key) + 1 + strlen(value) + 1;
+			format_to_use = (j == s->cols - 1) ? format_no_comma
+							   : format_with_comma;
 
-			temp = malloc(1);
-
-			// last item
-			if (j == s->cols - 1) {
-				key_pair_size = key_pair_size
-				    + strlen(format_no_comma) + 1;
-
-				temp = realloc(temp, key_pair_size);
-
-				snprintf(temp, key_pair_size, format_no_comma,
-				    key, value);
-			} else {
-
-				key_pair_size = key_pair_size
-				    + strlen(format_with_comma) + 1;
-
-				temp = realloc(temp, key_pair_size);
-
-				snprintf(temp, key_pair_size, format_with_comma,
-				    key, value);
-			}
-
+			snprintf(temp, 1000, format_to_use, key, value);
 			temp[strlen(temp)] = '\0';
+
 			strcat(obj, temp);
-			free(temp);
 		}
 
 		/* Need or an extra command is included */
@@ -113,17 +105,9 @@ convert_to_json(char **final, struct size *s, struct row **r)
 
 		obj[strlen(obj)] = '\0';
 		objects[i + 1] = obj;
-
-		/* Get the total bytes needed to set */
-		/* the final string pointer */
-		total += strlen(obj);
 	}
-	objects[s->rows + 1] = "]";
 
-	// Add one for the closing bracket
-	*final = realloc(*final, (total + 1) * sizeof(char *));
+	objects[s->rows + 1] = close;
 
-	for (int i = 0; i < s->rows + 2; ++i) {
-		strcat(*final, objects[i]); /*  */
-	}
+	*objects_ptr = objects;
 }

@@ -15,15 +15,12 @@ int
 main(int argc, char **argv)
 {
 	FILE *file;
-	struct size s;
-	struct row **rows;
 
 	int pipe_used;
-	char *json;
+	char **json = NULL;
 
-	/* Allocate space for the final json. This will be resized
-	   multiple times during the conversation */
-	json = malloc(10 * sizeof(char *));
+	struct size s;
+	struct row **rows;
 
 	pipe_used = !isatty(STDIN_FILENO);
 	if (!pipe_used && argc < 2)
@@ -39,27 +36,26 @@ main(int argc, char **argv)
 	   arrays of headers and value structs. */
 	get_data_size(&s, file);
 
-	/* Rows is a pointer to an array of struct pointers, so we'll
-	   allocate space for the array and fill it with pointers to
-	   empty row structs.
-	 */
+	/* /\* Rows is a pointer to an array of struct pointers, so we'll */
+	/*    allocate space for the array and fill it with pointers to */
+	/*    empty row structs. */
+	/*  *\/ */
 	rows = populate_rows(&s);
 
-	/* Here is where the values of input is mapped to structs and
-	   added to the overall array of row structs.*/
+	/* /\* Here is where the values of input is mapped to structs and */
+	/*    added to the overall array of row structs.*\/ */
 	make_rows(&s, rows, file);
 
-	/* Taking the row array, we convert struct into JSON string. */
+	/* /\* Taking the row array, we convert struct into JSON string. *\/ */
 	convert_to_json(&json, &s, rows);
 
-	/* We print the JSON to stdout, which can be directed to a file
-	   or the terminal */
+	/* /\* We print the JSON to stdout, which can be directed to a file */
+	/*    or the terminal *\/ */
 	print_json(json);
 
-	/* Clean up loose memory */
-	free(json);
+	/* /\* Clean up loose memory *\/ */
 	free(rows);
-	/* free_structs(rows, s.rows); */
+	free(json);
 
 	exit(EXIT_SUCCESS);
 

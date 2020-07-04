@@ -9,6 +9,26 @@
 #include "errors.h"
 #include "utils.h"
 
+/* Create a pointer array to struct row pointers. */
+struct row **
+populate_rows(struct size *s)
+{
+	int i;
+	struct row **rows;
+	struct row *r;
+
+	/* Create block that can will hold s->rows of struct row pointers */
+	rows = malloc(s->rows * sizeof(struct row *));
+
+	/* Loop through and populate. */
+	for (i = 0; i < s->rows; ++i) {
+		r = malloc(sizeof(struct row));
+		rows[i] = r;
+	}
+
+	return rows;
+}
+
 static void
 split_by_comma(int *count, char *line, char **collection)
 {
@@ -19,9 +39,9 @@ split_by_comma(int *count, char *line, char **collection)
 
 	while ((token = strsep(&text, ",")) != NULL) {
 		trim(token);
-		token_length = strlen(token);
+		token_length = strlen(token) + 1;
 		output = malloc(token_length * sizeof(char *));
-		strncpy(output, token, token_length);
+		memcpy(output, token, token_length);
 		collection[*count] = output;
 		(*count)++;
 	}
@@ -124,7 +144,6 @@ void
 make_rows(struct size *s, struct row **r, FILE *file)
 {
 	char *line, **headers;
-
 	size_t len, multiple_columns_size;
 	ssize_t read;
 
@@ -177,7 +196,6 @@ get_data_size(struct size *s, FILE *file)
 	int rows, cols;
 
 	char **columns;
-	bool found;
 
 	// start with items;
 	columns = malloc(MAX_COLUMNS * sizeof(char *));
@@ -187,13 +205,12 @@ get_data_size(struct size *s, FILE *file)
 	rows = -1;
 	cols = 0;
 
-	while (fgets(buff, 1000, file) != '\0') {
+	while (fgets(buff, 1000, file) != NULL) {
 
 		if (rows == -1) {
-			found = check_comma_in_quotes(buff);
-
 			split_line(buff, columns);
 			rows++;
+
 			// quickly get number of colums
 			while (*(columns++) != NULL)
 				cols++;
