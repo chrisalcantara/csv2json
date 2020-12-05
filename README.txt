@@ -1,4 +1,4 @@
-A small program to convert a CSV to JSON file in Go.
+A small program to convert a CSV to JSON file in C.
 
 
 Install
